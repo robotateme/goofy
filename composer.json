@@ -1,0 +1,15 @@
+{
+    "name": "inle/goofy",
+    "authors": [
+        {
+            "name": "Jaroslav Lezhenko",
+            "email": "jarwork884@gmail.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Goofy\\": "src/"
+        }
+    }
+}
