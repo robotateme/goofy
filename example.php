@@ -3,36 +3,87 @@ require_once "./vendor/autoload.php";
 
 use Goofy\Components\Interview;
 
-$interview = new Interview('I-1');
-/**
- * @todo Тут вероятно все таки нужен Builder для строгосоттветсвия контекстов классов при вызове методов
- * Сейчас получается не строгая вложенность, в какой-то мере
- * это можно преодолеть перевызовом методов attach
- * С билдером существует тоже проблема, сложная реализация.
- * Если использовать под каждый композит по билдеру
- * и их подменять то тогда теряется корневой, первый элемент.
- * Можно конечно его хранить в статике, используя Позднее статическое связывание.
- *
-*/
-$interview->addQuestion('Q1') //Возвращает Question
-    ->addVariant('v1', 3) //Возвращает Question
-    ->addVariant('v2', 6);
+abstract class X
+{
+    public array $pool = [];
+    public self $parent;
 
-$interview->addQuestion('Q2')
-    ->addVariant('v1', 6)
-    ->addVariant('v2', 8);
+    public function add(self $component)
+    {
+        $component->parent = $this;
+        $this->pool[] = $component;
+    }
+}
 
-//К примеру интервью начато, провалидировано и закончено.
+class A extends X
+{
+    public static function build()
+    {
+        return new ABuilder(new self());
+    }
+}
 
-var_dump($interview);
+class B extends X
+{
+}
 
-//Задаём конфиг для рассчёта.
+class C extends X
+{
+}
 
-$algorithm = new \Goofy\Algorithms\DefaultAlgorithm([
-    'Cook' => 9,
-    'Gourmet' => 14
-]);
 
-//считаем как нам удобно. В методе return не предопределён.
-$algorithm->calculate($interview);
+class ABuilder
+{
+    public X $master;
+    public static X $lateMaster;
+
+    public function __construct(X $master)
+    {
+        $this->master = $master;
+    }
+
+    public function addB(B $b)
+    {
+        $this->master->add($b);
+        self::$lateMaster = $this->master;
+        return new BBuilder($b);
+    }
+
+    final public function end()
+    {
+        return self::$lateMaster;
+    }
+}
+
+class BBuilder extends ABuilder
+{
+    public function addC(C $c)
+    {
+        $this->master->add($c);
+        return $this;
+    }
+
+    public function addB(B $b)
+    {
+        $this->master = self::$lateMaster;
+        return parent::addB($b);
+    }
+
+}
+
+$a = A::build()
+    ->addB(new B())
+    ->addC(new C)
+    ->addC(new C)
+    ->addC(new C)
+    ->addC(new C)
+    ->addB(new B())
+    ->addC(new C())
+    ->end()
+;
+
+var_dump($a);
+
+
+
 

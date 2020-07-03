@@ -31,5 +31,7 @@ class Variant extends Component
      */
     public function __construct(string $title, int $points)
     {
+        $this->title = $title;
+        $this->points = $points;
     }
 }

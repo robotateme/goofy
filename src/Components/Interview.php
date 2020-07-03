@@ -14,15 +14,8 @@ class Interview extends Composite
      */
     public function __construct(string $title)
     {
-
+        $this->title = $title;
+        parent::__construct();
     }
 
-    /**
-     * Добавление вопросов в интервью
-     * @param string $title
-     * @return Question
-     */
-    public function addQuestion(string $title): Question
-    {
-    }
 }
